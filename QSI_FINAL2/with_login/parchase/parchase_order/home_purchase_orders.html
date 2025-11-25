@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Orders - QSI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .table-header-cell {
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #4b5563;
+            background-color: #f9fafb;
+            text-align: left;
+        }
+
+        .table-body-cell {
+            padding: 1rem 1rem;
+            font-size: 0.875rem;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* Popover Styles */
+        .popover-menu {
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.25rem;
+            z-index: 9999;
+            min-width: 160px;
+        }
+
+        .popover-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            font-size: 0.875rem;
+            color: #374151;
+            text-align: left;
+            transition: background-color 0.15s;
+        }
+
+        .popover-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .popover-item.text-red-600:hover {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-gray-800 text-white flex-shrink-0 hidden md:flex flex-col shadow-lg transition-all duration-300" id="sidebar">
+            <div class="p-6 text-2xl font-bold border-b border-gray-700 flex justify-between items-center">
+                <span><i class="mr-2 text-indigo-400"></i> QSI</span>
+                <button id="close-sidebar" class="md:hidden text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <a href="../../dashboard_with_login.html" class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <i class="fas fa-chart-pie mr-3 w-6 text-center"></i>Dashboard
+                </a>
+                
+                <div>
+                    <button id="documents-dropdown-btn" class="w-full flex justify-between items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700 text-left">
+                        <span class="flex items-center"><i class="fas fa-file-invoice mr-3 w-6 text-center"></i>Sales Documents</span>
+                        <i id="dropdown-icon" class="fas fa-chevron-down transform transition-transform duration-200 text-xs"></i>
+                    </button>
+                    <div id="documents-dropdown-content" class="pl-8 pt-1 space-y-1 hidden bg-gray-900 bg-opacity-50 rounded-md mt-1">
+                        <a href="../../quotation/home_quotation.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Quotation</a>
+                        <a href="../../saleorder/home_sales_order.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Sales Order</a>
+                        <a href="../../invoice/home_invoice.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Invoice</a>
+                        <a href="../../credit_note.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Credit Note</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button id="purchases-dropdown-btn" class="w-full flex justify-between items-center py-2.5 px-4 rounded transition duration-200 bg-gray-700 text-left">
+                        <span class="flex items-center"><i class="fas fa-shopping-cart mr-3 w-6 text-center"></i>Purchases</span>
+                        <i id="purchases-dropdown-icon" class="fas fa-chevron-down transform transition-transform duration-200 rotate-180 text-xs"></i>
+                    </button>
+                    <div id="purchases-dropdown-content" class="pl-8 pt-1 space-y-1 bg-gray-900 bg-opacity-50 rounded-md mt-1">
+                        <a href="../vendor/vendors_leads.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Vendors</a>
+                        <a href="home_purchase_orders.html" class="block py-2 px-4 rounded bg-gray-600 text-white text-sm">Purchase Orders</a>
+                        <a href="../debit notes/debit_notes.html" class="block py-2 px-4 rounded hover:bg-gray-700 text-sm">Debit Notes</a>
+                    </div>
+                </div>
+
+                <a href="../../manage-clients.html" class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <i class="fas fa-users mr-3 w-6 text-center"></i>Clients
+                </a>
+                <a href="../../settings.html" class="flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-gray-700">
+                    <i class="fas fa-cog mr-3 w-6 text-center"></i>Settings
+                </a>
+            </nav>
+        </aside>
+
+        <div class="fixed top-0 left-0 w-full bg-gray-800 text-white p-4 flex justify-between items-center md:hidden z-50">
+            <span class="text-xl font-bold">QSI</span>
+            <button id="mobile-menu-btn"><i class="fas fa-bars text-xl"></i></button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 mt-14 md:mt-0">
+            <header class="mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        Purchase Orders 
+                    </h1>
+                    <a href="create_purchase_order.html" class="bg-purple-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-purple-700 transition duration-200 shadow-sm flex items-center">
+                        <i class="fas fa-plus mr-2"></i> Create New
+                    </a>
+                </div>
+            </header>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative">
+                
+                <div class="flex items-center space-x-4 border-b pb-4 mb-4">
+                    <button id="tab-active" class="px-3 py-1.5 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-md transition-colors">Active Orders</button>
+                    <button id="tab-deleted" class="px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-md transition-colors">Deleted / Cancelled</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 border rounded-lg bg-gray-50">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</label>
+                        <select id="filter-status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                            <option value="All">All Statuses</option>
+                            <option value="Draft">Draft</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Received">Received</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vendor</label>
+                        <select id="filter-vendor" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                            <option>All Vendors</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</label>
+                        <input type="date" id="filter-date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                    </div>
+                </div>
+
+                <div id="bulk-action-bar" class="hidden mb-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3 flex justify-between items-center shadow-sm transition-all duration-300">
+                    <div class="flex items-center space-x-4">
+                        <button id="bulk-action-close" class="text-indigo-400 hover:text-indigo-700 transition-colors p-1">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                        <span class="text-indigo-900 font-bold text-lg">
+                            <span id="bulk-action-count">0</span> selected
+                        </span>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div id="bulk-actions-active" class="hidden">
+                            <button id="bulk-action-cancel" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-4 rounded-md shadow-sm transition-colors text-sm flex items-center">
+                                <i class="fas fa-ban mr-2"></i> Delete
+                            </button>
+                        </div>
+
+                        <div id="bulk-actions-deleted" class="hidden flex gap-2">
+                            <button id="bulk-action-delete-perm" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-1.5 px-4 rounded-md shadow-sm transition-colors text-sm flex items-center">
+                                <i class="fas fa-trash-alt mr-2"></i> Delete Permanently
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto min-h-[300px]"> 
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="table-header-cell w-10 text-center">
+                                    <input type="checkbox" id="select-all-checkbox" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                                </th>
+                                <th class="table-header-cell">PO Number</th>
+                                <th class="table-header-cell">Date</th>
+                                <th class="table-header-cell">Vendor</th>
+                                <th class="table-header-cell">Status</th>
+                                <th class="table-header-cell text-right">Sub Total</th>
+                                <th class="table-header-cell text-right">Total</th>
+                                <th class="table-header-cell text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="po-table-body" class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="table-body-cell text-center" colspan="8">
+                                    <div class="flex justify-center items-center p-4">
+                                        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                                        <span class="ml-2 text-gray-500">Loading orders...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+                    <span id="showing-text">Showing all results</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 transform transition-all">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h3 class="text-xl font-bold text-gray-800">Record Vendor Payment</h3>
+            <button id="close-payment-modal" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+        </div>
+
+        <form id="payment-form" class="space-y-4">
+            <input type="hidden" id="pay-po-id">
+            
+            <div class="bg-gray-50 p-4 rounded-lg text-sm space-y-2 border border-gray-200">
+                <div class="flex justify-between"><span>PO Number:</span> <span id="pay-po-no" class="font-semibold text-gray-800"></span></div>
+                <div class="flex justify-between"><span>Vendor:</span> <span id="pay-vendor" class="font-semibold text-gray-800"></span></div>
+                <div class="border-t my-2"></div>
+                <div class="flex justify-between text-gray-600"><span>Total Amount:</span> <span id="pay-total" class="font-semibold"></span></div>
+                <div class="flex justify-between text-green-600"><span>Already Paid:</span> <span id="pay-already-paid" class="font-semibold"></span></div>
+                <div class="flex justify-between text-lg font-bold text-red-600 mt-1"><span>Pending Amount:</span> <span id="pay-pending"></span></div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Amount to Pay <span class="text-red-500">*</span></label>
+                <div class="relative mt-1">
+                    <span class="absolute left-3 top-2 text-gray-500">₹</span>
+                    <input type="number" id="pay-amount-input" step="0.01" required class="w-full pl-8 border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Payment Date <span class="text-red-500">*</span></label>
+                <input type="date" id="pay-date-input" required class="mt-1 w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Payment Method</label>
+                <select id="pay-method-input" class="mt-1 w-full border border-gray-300 rounded-md p-2 bg-white">
+                    <option>Bank Transfer</option>
+                    <option>Cash</option>
+                    <option>Cheque</option>
+                    <option>UPI</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Notes</label>
+                <textarea id="pay-notes-input" rows="2" class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="Reference no, transaction ID..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 pt-2 border-t">
+                <button type="button" id="cancel-payment-btn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">Cancel</button>
+                <button type="submit" id="save-payment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm">Record Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- CONSTANTS & CONFIG ---
+        const API_BASE_URL = 'http://Aixains-Mac-mini.local:8000/api';
+        const API_URL = `${API_BASE_URL}/purchase-orders`;
+
+        // --- ELEMENTS ---
+        const tbody = document.getElementById('po-table-body');
+        const totalCountSpan = document.getElementById('total-count');
+        
+        // Filters
+        const filterStatus = document.getElementById('filter-status');
+        const filterVendor = document.getElementById('filter-vendor');
+        const filterDate = document.getElementById('filter-date');
+        
+        // Tabs
+        const tabActive = document.getElementById('tab-active');
+        const tabDeleted = document.getElementById('tab-deleted');
+        
+        // Bulk Actions
+        const selectAllCheckbox = document.getElementById('select-all-checkbox');
+        const bulkActionBar = document.getElementById('bulk-action-bar');
+        const bulkActionCount = document.getElementById('bulk-action-count');
+        const bulkActionClose = document.getElementById('bulk-action-close');
+        const bulkActionsActive = document.getElementById('bulk-actions-active');
+        const bulkActionsDeleted = document.getElementById('bulk-actions-deleted');
+        const btnBulkCancel = document.getElementById('bulk-action-cancel');
+        const btnBulkDeletePerm = document.getElementById('bulk-action-delete-perm');
+
+        // Payment Modal Elements
+        
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentForm = document.getElementById('payment-form');
+        const payPoId = document.getElementById('pay-po-id');
+        const payPoNo = document.getElementById('pay-po-no');
+        const payVendor = document.getElementById('pay-vendor');
+        const payTotal = document.getElementById('pay-total');
+        const payPending = document.getElementById('pay-pending');
+        const payAmountInput = document.getElementById('pay-amount-input');
+        const payDateInput = document.getElementById('pay-date-input');
+
+        // State
+        let currentTab = 'active'; // 'active' or 'deleted'
+        let allPurchaseOrders = [];
+        let displayedPurchaseOrders = [];
+
+        // --- AUTH ---
+        function getAuthHeaders() {
+            const token = localStorage.getItem("token");
+            return token ? {'Authorization': `Bearer ${token}`} : null;
+        }
+
+        async function safeFetch(url, opts = {}) {
+            const headers = Object.assign({}, opts.headers || {});
+            const authHeaders = getAuthHeaders();
+            if(!authHeaders) {
+                console.warn("No auth token found");
+            }
+            if(authHeaders) Object.assign(headers, authHeaders);
+            
+            if (opts.body && !(opts.body instanceof FormData) && !headers["Content-Type"]) {
+                headers["Content-Type"] = "application/json";
+            }
+            
+            const finalOpts = Object.assign({}, opts, { headers });
+            
+            try {
+                const res = await fetch(url, finalOpts);
+                if (!res.ok) throw new Error(res.statusText);
+                const text = await res.text();
+                return text ? JSON.parse(text) : {};
+            } catch (error) {
+                console.error("API Error:", error);
+                throw error;
+            }
+        }
+
+        // --- HELPERS ---
+        const formatCurrency = val => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(Number(val) || 0);
+        const escapeHtml = str => (str || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+        function statusBadge(status) {
+            const s = (status || 'draft').toLowerCase();
+            const classes = {
+                'approved': 'bg-green-100 text-green-800',
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'received': 'bg-blue-100 text-blue-800',
+                'cancelled': 'bg-red-100 text-red-800',
+                'draft': 'bg-gray-100 text-gray-800'
+            };
+            let cls = classes['draft'];
+            if(s.includes('approv')) cls = classes['approved'];
+            else if(s.includes('pend')) cls = classes['pending'];
+            else if(s.includes('receiv')) cls = classes['received'];
+            else if(s.includes('cancel') || s.includes('delete')) cls = classes['cancelled'];
+
+            return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}">${status}</span>`;
+        }
+
+        // --- CORE LOGIC ---
+
+        async function fetchOrders() {
+            try {
+                const data = await safeFetch(API_URL);
+                allPurchaseOrders = Array.isArray(data) ? data : [];
+                populateVendorFilter();
+                applyFilters();
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-red-500">Error loading data: ${err.message}</td></tr>`;
+            }
+        }
+
+        function populateVendorFilter() {
+            const vendors = new Set(allPurchaseOrders.map(po => po.supplier_name || 'Unknown'));
+            filterVendor.innerHTML = '<option>All Vendors</option>';
+            Array.from(vendors).sort().forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.textContent = v;
+                filterVendor.appendChild(opt);
+            });
+        }
+
+        function applyFilters() {
+            // 1. Filter by Tab
+            let filtered = allPurchaseOrders.filter(po => {
+                const status = (po.status || '').toLowerCase();
+                const isDeletedOrCancelled = status.includes('cancel') || status.includes('delete');
+                return currentTab === 'active' ? !isDeletedOrCancelled : isDeletedOrCancelled;
+            });
+
+            // 2. Filter by Inputs
+            const sVendor = filterVendor.value;
+            const sStatus = filterStatus.value;
+            const sDate = filterDate.value;
+
+            filtered = filtered.filter(po => {
+                const matchVendor = sVendor === 'All Vendors' || (po.supplier_name || '') === sVendor;
+                const matchStatus = sStatus === 'All' || (po.status || '').toLowerCase().includes(sStatus.toLowerCase());
+                const matchDate = !sDate || (po.po_date && po.po_date.startsWith(sDate));
+                return matchVendor && matchStatus && matchDate;
+            });
+
+            displayedPurchaseOrders = filtered;
+            renderTable();
+            updateSelectionUI(); 
+        }
+
+        function renderTable() {
+            totalCountSpan.textContent = displayedPurchaseOrders.length;
+            tbody.innerHTML = '';
+
+            if (displayedPurchaseOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-500">No orders found in this view.</td></tr>`;
+                if(selectAllCheckbox) selectAllCheckbox.checked = false;
+                return;
+            }
+
+            displayedPurchaseOrders.forEach(po => {
+                const id = po._id || po.id;
+                // Data extraction
+                const poNo = escapeHtml(po.po_no);
+                const vendor = escapeHtml(po.supplier_name || 'N/A');
+                const status = po.status;
+                const totalAmt = po.total || 0;
+                const paidAmt = po.paid_amount || 0;
+                const pendingAmt = Math.max(0, totalAmt - paidAmt);
+
+
+                // --- PAY BUTTON LOGIC START ---
+                let payButtonHtml = '';
+                
+                // Show pay button only for Active tab
+                if (currentTab === 'active') {
+                    if (pendingAmt > 1) {
+                        payButton = `
+                            <button class="action-payment flex items-center text-gray-500 hover:text-green-600 font-bold text-sm transition-colors duration-200" 
+                                    title="Pay Vendor" 
+                                    data-id="${id}" 
+                                    data-po-no="${poNo}"
+                                    data-vendor="${vendor}"
+                                    data-total="${totalAmt}"
+                                    data-paid="${paidAmt}">
+                                <i class="fas fa-dollar-sign mr-1"></i> Pay
+                            </button>`;
+                    } else {
+                        payButton = `<span class="text-xs text-green-600 font-bold flex items-center"><i class="fas fa-check-circle mr-1"></i>Paid</span>`;
+                    }
+                }
+                // --- PAY BUTTON LOGIC END ---
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 transition-colors duration-150 group border-b';
+                tr.dataset.id = id;
+
+                tr.innerHTML = `
+                    <td class="table-body-cell text-center">
+                        <input type="checkbox" class="po-checkbox w-4 h-4 text-indigo-600 border-gray-300 rounded cursor-pointer" data-id="${id}">
+                    </td>
+                    <td class="table-body-cell">
+                        <span class="font-medium text-gray-800">${poNo}</span>
+                    </td>
+                    <td class="table-body-cell text-gray-500 text-sm">${escapeHtml(po.po_date || '')}</td>
+                    <td class="table-body-cell font-medium text-gray-700">${vendor}</td>
+                    <td class="table-body-cell">${statusBadge(status)}</td>
+                    <td class="table-body-cell text-right text-gray-600">${formatCurrency(po.sub_total)}</td>
+                    <td class="table-body-cell text-right font-bold text-gray-800">${formatCurrency(totalAmt)}</td>
+                    <td class="table-body-cell">
+                        <div class="flex items-center justify-center space-x-4">
+                            <button class="text-gray-400 hover:text-indigo-600 action-open" title="View Order" data-id="${id}">
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-indigo-600 action-edit" title="Edit Order" data-id="${id}">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            ${payButton}
+                            <button class="text-gray-400 hover:text-gray-600 action-more" title="More Actions" data-id="${id}">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            attachEventHandlers();
+        }
+
+        function attachEventHandlers() {
+            // Checkbox Highlight Logic
+            tbody.querySelectorAll('.po-checkbox').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    toggleRowHighlight(e.target);
+                    updateSelectionUI();
+                    updateSelectAllState();
+                });
+            });
+
+            // Action Buttons
+            tbody.querySelectorAll('.action-open').forEach(btn => 
+                btn.addEventListener('click', () => window.location.href = `view_purchase_order.html?id=${btn.dataset.id}`));
+            
+            tbody.querySelectorAll('.action-edit').forEach(btn => 
+                btn.addEventListener('click', () => window.location.href = `edit_purchase_order.html?id=${btn.dataset.id}`));
+
+            // --- PAYMENT BUTTON HANDLER ---
+            tbody.querySelectorAll('.action-payment').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const button = e.currentTarget;
+                    const poData = {
+                        id: button.dataset.id,
+                        po_no: button.dataset.poNo,
+                        vendor: button.dataset.vendor,
+                        total: parseFloat(button.dataset.total),
+                        paid: parseFloat(button.dataset.paid)
+                    };
+                    openPaymentModal(poData);
+                });
+            });
+
+            // More Button Logic
+            tbody.querySelectorAll('.action-more').forEach(btn => 
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openPopover(e.currentTarget, e.currentTarget.dataset.id);
+                }));
+        }
+
+        function toggleRowHighlight(checkbox) {
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                row.classList.add('bg-indigo-50');
+            } else {
+                row.classList.remove('bg-indigo-50');
+            }
+        }
+
+        function updateSelectAllState() {
+            const allCbs = tbody.querySelectorAll('.po-checkbox');
+            const checkedCbs = tbody.querySelectorAll('.po-checkbox:checked');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = allCbs.length > 0 && allCbs.length === checkedCbs.length;
+                selectAllCheckbox.indeterminate = checkedCbs.length > 0 && checkedCbs.length < allCbs.length;
+            }
+        }
+
+        function updateSelectionUI() {
+            const checkedCbs = tbody.querySelectorAll('.po-checkbox:checked');
+            const count = checkedCbs.length;
+
+            if (count > 0) {
+                bulkActionBar.classList.remove('hidden');
+                bulkActionCount.textContent = count;
+
+                if (currentTab === 'active') {
+                    bulkActionsActive.classList.remove('hidden');
+                    bulkActionsDeleted.classList.add('hidden');
+                } else {
+                    bulkActionsActive.classList.add('hidden');
+                    bulkActionsDeleted.classList.remove('hidden');
+                }
+            } else {
+                bulkActionBar.classList.add('hidden');
+            }
+        }
+
+        if(selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                tbody.querySelectorAll('.po-checkbox').forEach(cb => {
+                    cb.checked = isChecked;
+                    toggleRowHighlight(cb);
+                });
+                updateSelectionUI();
+            });
+        }
+
+        bulkActionClose.addEventListener('click', () => {
+            if(selectAllCheckbox) selectAllCheckbox.checked = false;
+            tbody.querySelectorAll('.po-checkbox').forEach(cb => {
+                cb.checked = false;
+                toggleRowHighlight(cb);
+            });
+            updateSelectionUI();
+        });
+
+        // --- TABS ---
+        function switchTab(tab) {
+            currentTab = tab;
+            const activeClass = "px-3 py-1.5 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-md";
+            const inactiveClass = "px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-md";
+            
+            if (tab === 'active') {
+                tabActive.className = activeClass;
+                tabDeleted.className = inactiveClass;
+                filterStatus.value = 'All'; 
+            } else {
+                tabDeleted.className = activeClass;
+                tabActive.className = inactiveClass;
+            }
+            applyFilters();
+        }
+
+        tabActive.addEventListener('click', () => switchTab('active'));
+        tabDeleted.addEventListener('click', () => switchTab('deleted'));
+
+        filterVendor.addEventListener('change', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+        filterDate.addEventListener('change', applyFilters);
+
+        // --- BULK API ACTIONS ---
+        async function performBulkAction(actionType, ids) {
+            if (ids.length === 0) return;
+            const msg = actionType === 'cancel' 
+                ? `Move ${ids.length} orders to Deleted/Cancelled list?` 
+                : `PERMANENTLY DELETE ${ids.length} orders? Undoing this is impossible.`;
+            
+            if (!confirm(msg)) return;
+
+            try {
+                const promises = ids.map(id => {
+                    if (actionType === 'cancel') {
+                        return safeFetch(`${API_URL}/${id}/status`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ status: 'Cancelled' })
+                        });
+                    } else { 
+                        return safeFetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                    }
+                });
+                await Promise.all(promises);
+                alert('Action completed successfully.');
+                fetchOrders(); 
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        btnBulkCancel.addEventListener('click', () => {
+            const ids = Array.from(tbody.querySelectorAll('.po-checkbox:checked')).map(cb => cb.dataset.id);
+            performBulkAction('cancel', ids);
+        });
+
+        btnBulkDeletePerm.addEventListener('click', () => {
+            const ids = Array.from(tbody.querySelectorAll('.po-checkbox:checked')).map(cb => cb.dataset.id);
+            performBulkAction('delete-perm', ids);
+        });
+
+        // --- POPOVER LOGIC ---
+        function openPopover(triggerBtn, id) {
+            document.querySelectorAll('.popover-menu').forEach(el => el.remove());
+            
+            const popover = document.createElement('div');
+            popover.className = 'popover-menu fixed bg-white border border-gray-200 shadow-lg rounded-md z-50';
+            
+            let menuHtml = '';
+            if (currentTab === 'active') {
+                menuHtml = `<button class="popover-item text-red-600 w-full hover:bg-gray-50 text-left px-4 py-2" id="pop-cancel">
+                                <i class="fas fa-ban w-5"></i> Delete
+                            </button>`;
+            } else {
+                menuHtml = `<button class="popover-item text-red-600 w-full hover:bg-gray-50 text-left px-4 py-2" id="pop-delete">
+                                <i class="fas fa-trash-alt w-5"></i> Delete Permanently
+                            </button>`;
+            }
+            popover.innerHTML = menuHtml;
+            document.body.appendChild(popover);
+
+            const rect = triggerBtn.getBoundingClientRect();
+            popover.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            popover.style.left = `${rect.left + window.scrollX - 100}px`; 
+
+            const btnCancel = popover.querySelector('#pop-cancel');
+            if(btnCancel) {
+                btnCancel.addEventListener('click', () => {
+                    performBulkAction('cancel', [id]);
+                    popover.remove();
+                });
+            }
+            
+            const btnDelete = popover.querySelector('#pop-delete');
+            if(btnDelete) {
+                btnDelete.addEventListener('click', () => {
+                    performBulkAction('delete-perm', [id]);
+                    popover.remove();
+                });
+            }
+
+            setTimeout(() => {
+                document.addEventListener('click', function close(e) {
+                    if (!popover.contains(e.target) && e.target !== triggerBtn) {
+                        popover.remove();
+                        document.removeEventListener('click', close);
+                    }
+                });
+            }, 0);
+        }
+
+        // --- PAYMENT MODAL LOGIC ---
+        // Append this to the end of the script
+
+
+
+// Open Modal Function
+function openPaymentModal(data) {
+    // ... logic to populate data into inputs ...
+    // Calculate and display Pending Amount
+    const pending = data.total - data.paid;
+    document.getElementById('pay-pending').textContent = formatCurrency(pending);
+    document.getElementById('pay-amount-input').value = pending.toFixed(2);
+    
+    paymentModal.classList.remove('hidden');
+    paymentModal.classList.add('flex');
+}
+
+// Form Submit Event (New API Call)
+if(paymentForm) {
+    paymentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // New API Payload
+        const payload = {
+            purchase_order_id: document.getElementById('pay-po-id').value,
+            amount: parseFloat(document.getElementById('pay-amount-input').value),
+            payment_date: document.getElementById('pay-date-input').value,
+            payment_method: document.getElementById('pay-method-input').value,
+            notes: document.getElementById('pay-notes-input').value
+        };
+
+        try {
+            // ✅ Calling the new API
+            await safeFetch(`${API_BASE_URL}/vendor-payments`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            alert('Payment recorded successfully!');
+            closePaymentModal();
+            fetchOrders(); // Refresh table
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+}
+
+        // --- SIDEBAR TOGGLE ---
+        const sidebar = document.getElementById('sidebar');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const closeSidebar = document.getElementById('close-sidebar');
+
+        if(mobileBtn) {
+            mobileBtn.addEventListener('click', () => {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex', 'absolute', 'h-full', 'z-50');
+            });
+        }
+        if(closeSidebar) {
+            closeSidebar.addEventListener('click', () => {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex', 'absolute', 'h-full', 'z-50');
+            });
+        }
+        
+        // Dropdowns
+        const setupDropdown = (btnId, contentId, iconId) => {
+            const btn = document.getElementById(btnId);
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
+            if(btn) {
+                btn.addEventListener('click', () => {
+                    content.classList.toggle('hidden');
+                    icon.classList.toggle('rotate-180');
+                });
+            }
+        };
+        setupDropdown('documents-dropdown-btn', 'documents-dropdown-content', 'dropdown-icon');
+        setupDropdown('purchases-dropdown-btn', 'purchases-dropdown-content', 'purchases-dropdown-icon');
+
+        // --- INIT ---
+        fetchOrders();
+    });
+    </script>
+</body>
+</html>
